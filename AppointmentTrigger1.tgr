@@ -1,0 +1,19 @@
+trigger AppointmentTrigger1 on Appointment__c (after update) {
+    Set<Id> idsToProcess = new Set<Id>();
+
+    for (Appointment__c appt : Trigger.new) {
+        Appointment__c oldAppt = Trigger.oldMap.get(appt.Id);
+
+        System.debug('🚗 NEW KM=' + appt.Kilometer__c + ', OLD KM=' + oldAppt.Kilometer__c);
+
+        if (appt.Kilometer__c >= 32000 && oldAppt.Kilometer__c < 32000) {
+            idsToProcess.add(appt.Id);
+            System.debug('✅ Trigger Condition Met for ' + appt.Id);
+        }
+    }
+
+    if (!idsToProcess.isEmpty()) {
+        System.debug('📞 Calling Flowise for ' + idsToProcess.size() + ' appointments');
+        AppointmentTriggerHandler1.notifyKilometerExceed(new List<Id>(idsToProcess));
+    }
+}

@@ -1,0 +1,495 @@
+{
+  "name": "Voice to Vehicles Details",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "4e30a5b7-6fe9-4ef2-bf69-1eeb1dbe31ee",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        -1360
+      ],
+      "id": "67fa7972-8143-46b3-817e-f872857a2fa6",
+      "name": "Webhook",
+      "webhookId": "4e30a5b7-6fe9-4ef2-bf69-1eeb1dbe31ee"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dhruva-api.bhashini.gov.in/services/inference/pipeline",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "AN8Aw1FXdiKvatkWPiCl8AQRGbvY4HFBXtaFpTL5YoKrWtLV5pvw7e5l_QtckbFm"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"pipelineTasks\": [\n    {\n      \"taskType\": \"asr\",\n      \"config\": {\n        \"serviceId\": \"ai4bharat/whisper-medium-en--gpu--t4\",\n        \"modelId\": \"641c0be440abd176d64c3f92\",\n        \"language\": {\n          \"sourceLanguage\": \"en\",\n          \"sourceScriptCode\": \"Latn\"\n        },\n        \"audioFormat\": \"wav\",\n        \"samplingRate\": 16000\n      }\n    }\n  ],\n  \"inputData\": {\n    \"audio\": [\n      {\n        \"audioContent\": \"{{ $json.data }}\"\n      }\n    ]\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        64,
+        -1360
+      ],
+      "id": "6ff2a525-bf54-45e0-b016-55fd7dc63fc9",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "binaryPropertyName": "file",
+        "destinationKey": "=data",
+        "options": {
+          "encoding": "base64"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -1360
+      ],
+      "id": "c8a8a418-0fe5-443b-aa64-b72fa2cbf2e1",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "let tamilText = \"\";\nlet englishText = \"\";\n\n// Extract Tamil & English from pipeline\nif ($json.pipelineResponse) {\n  const asr = $json.pipelineResponse.find(t => t.taskType === \"asr\");\n  const trans = $json.pipelineResponse.find(t => t.taskType === \"translation\");\n  tamilText = asr?.output?.[0]?.source || \"\";\n  englishText = trans?.output?.[0]?.target || \"\";\n}\n\n// Use whichever text is available\nconst text = (englishText || tamilText || \"\").trim();\n\n// --- Extract Vehicle Name & Number ---\n\n// Try to find a vehicle number pattern (supports digits, letters, spaces)\nlet vehicleNumber = \"\";\nconst numberMatch = text.match(\n  /(vehicle\\s*number|number|registration\\s*number)\\s*(is|:)?\\s*([A-Za-z0-9\\s]+)/i\n);\nif (numberMatch) {\n  vehicleNumber = numberMatch[3].trim();\n}\n\n// Try to find a vehicle name pattern if it exists\nlet vehicleName = \"\";\nconst nameMatch = text.match(/vehicle\\s*name\\s*(is|:)?\\s*([A-Za-z\\s]+)/i);\nif (nameMatch) {\n  vehicleName = nameMatch[2].trim();\n}\n\n// --- Convert words to digits (for spoken ASR outputs) ---\nvehicleNumber = vehicleNumber\n  .toLowerCase()\n  .replace(/zero/g, \"0\")\n  .replace(/one/g, \"1\")\n  .replace(/two/g, \"2\")\n  .replace(/three/g, \"3\")\n  .replace(/four/g, \"4\")\n  .replace(/five/g, \"5\")\n  .replace(/six/g, \"6\")\n  .replace(/seven/g, \"7\")\n  .replace(/eight/g, \"8\")\n  .replace(/nine/g, \"9\")\n  .replace(/\\s+/g, \"\");\n\n// --- Return structured output ---\nreturn [\n  {\n    json: {\n      Tamil_Text: tamilText,\n      English_Text: englishText,\n      Vehicle_Name: vehicleName,\n      Vehicle_Number: vehicleNumber,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -1328
+      ],
+      "id": "f1f15a5b-b947-469f-aa05-d6685865fc95",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "query": "=SELECT Id, Name,Vehicle_Owner__r.Phone,Vehicle_Owner__r.Name,Vehicle_Owner__c\nFROM Vehicle__c\nWHERE Vehicle_Number__c LIKE '%{{ $('Code in JavaScript').item.json.Vehicle_Number }}%'\n"
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        768,
+        -1360
+      ],
+      "id": "e1ce5006-4bad-4cfb-8518-b29ef1364f58",
+      "name": "Perform a query",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "ycfwegFNrdVIn1LF",
+          "name": "vpilot Dev SandBox"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "customObject",
+        "customObject": "Appointment__c",
+        "customFieldsUi": {
+          "customFieldsValues": [
+            {
+              "fieldId": "Vehicle__c",
+              "value": "={{ $json.Id }}"
+            },
+            {
+              "fieldId": "Contact__c",
+              "value": "={{ $json.Vehicle_Owner__c }}"
+            },
+            {
+              "fieldId": "Comments__c",
+              "value": "=Appointment was created successfully with provided details."
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -896
+      ],
+      "id": "d6016d0f-d2a5-45d2-b93d-68c000e59faf",
+      "name": "Create a custom object",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "ycfwegFNrdVIn1LF",
+          "name": "vpilot Dev SandBox"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "query": "=SELECT Id,Contact__r.Name,Scheduled_Time_Start__c,Scheduled_Time_End__c,Comments__c from Appointment__c Where Id = '{{ $json.id }}'"
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -896
+      ],
+      "id": "bf305cb4-6fa5-4388-a0ff-7f48fc03bcff",
+      "name": "Perform a query1",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "ycfwegFNrdVIn1LF",
+          "name": "vpilot Dev SandBox"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Status__c }}",
+        "options": {
+          "systemMessage": "=You are a multilingual message formatter.\n\nGenerate a short, polite customer message based on the following details:\n\nLanguage: {{ $('Code in JavaScript1').item.json.language }}\nCustomer Name: {{ $('Perform a query').item.json.Vehicle_Owner__r.Name }}\nStatus: {{ $json.Status__c }}\n\nInstructions:\n- Write the message in the specified language.\n- Begin with a greeting that includes the customer's name.\n- Keep it professional, friendly, and brief.\n- The message should clearly reflect the current status:\n  - If Status is \"New\": politely inform that the appointment status.\n  - If Status is \"InProgress\": inform that the service/job is currently in progress.\n  - If Status is \"Scheduled\": inform that the job has been completed successfully.\n  - If Status is \"Cancelled\": politely inform that the appointment has been cancelled.\nIf Status is \"Closed\": politely inform that the appointment has been cancelled.\n  - For any other status: provide a neutral confirmation message with the given status.\n- Do not translate names or placeholders.\n\nExample (in English):\n\"Hello John, your service appointemnt is now in progress. We’ll notify you once it’s completed. Thank you\"\n\nNow generate the correct message.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1536,
+        -1344
+      ],
+      "id": "eb278ae2-bb54-4f12-99f9-1f4253e5dae8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        -1152
+      ],
+      "id": "fbe8fd33-692c-44f8-a724-f25549b6d9ee",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "kLTmhOT9og3fY1kZ",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2320,
+        -1312
+      ],
+      "id": "caddb506-de98-47e5-8575-dea7ec6dea02",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dhruva-api.bhashini.gov.in/services/inference/pipeline",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "2PUe5gOcYaff9TrHi-2TmAbDoEVJm3xWWta9q2mxgpkc-k4sS3Ay5SYRsilSCm_-"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"pipelineTasks\": [       \n        {\n            \"taskType\": \"tts\",\n            \"config\": {\n                \"language\": {\n                    \"sourceLanguage\": \"{{ $('Code in JavaScript1').item.json.code }}\"\n                },\n                \"serviceId\": \"ai4bharat/indic-tts-coqui-misc-gpu--t4\",\n                \"gender\": \"female\",\n                \"samplingRate\": 8000\n            }\n        }\n    ],\n    \"inputData\": {\n        \"input\": [\n            {\n                \"source\": \"{{ $json.output }}\"\n            }\n        ]\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1872,
+        -1312
+      ],
+      "id": "a61e20b8-aa97-425f-b355-809487329d8a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        -928
+      ],
+      "id": "63b112d2-1177-4c25-b962-cc080298494a",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "kLTmhOT9og3fY1kZ",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Tamil_Text }}",
+        "options": {
+          "systemMessage": "=You are a language detection assistant for Indian languages.\nDetect which Indian language the following text is written in.\nRespond only in the exact format below using two separate code blocks — one for each field.\n\nIf no Indian language is detected, use English (en) as default.\n\n⚙️ Valid Indian languages:\nAssamese - as\nBengali - bn\nGujarati - gu\nHindi - hi\nKannada - kn\nMalayalam - ml\nMarathi - mr\nOdia - or\nPunjabi - pa\nTamil - ta\nTelugu - te\nUrdu - ur\nEnglish - en\n\n🧾 Output format (strictly this):\n\nlanguage: <LanguageName>\n\ncode: <LanguageCode>\n\n\nText to detect:\n\"{{ $json.Tamil_Text }}\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        352,
+        -1264
+      ],
+      "id": "d36817f1-fa8a-4c67-a0ad-fb02c6c32834",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the raw text output from the previous AI node\nconst text = $input.first().json.output;\n\n// Match the language and code from the output using regex\nconst langMatch = text.match(/language:\\s*([A-Za-z]+)/);\nconst codeMatch = text.match(/code:\\s*([a-z]+)/);\n\nreturn {\n  language: langMatch ? langMatch[1] : \"English\",\n  code: codeMatch ? codeMatch[1] : \"en\"\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -1344
+      ],
+      "id": "8ba07aa8-446e-4ded-abcc-084d9de8c97c",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "pipelineResponse[0].audio[0].audioContent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2128,
+        -1328
+      ],
+      "id": "859c3429-70c2-4006-8f29-50a853e7f082",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "query": "=SELECT Id, Vehicle__c, Status__c FROM Appointment__c where Vehicle__c = '{{ $json.Id }}' AND Status__c != 'Closed' AND Status__c  != null Order By CreatedDate DESC LIMIT 1"
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -1360
+      ],
+      "id": "11a16171-47f7-4fae-a843-57466171f4a8",
+      "name": "Perform a query2",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "ycfwegFNrdVIn1LF",
+          "name": "vpilot Dev SandBox"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perform a query": {
+      "main": [
+        [
+          {
+            "node": "Perform a query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a custom object": {
+      "main": [
+        []
+      ]
+    },
+    "Perform a query1": {
+      "main": [
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Perform a query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perform a query2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "588474d5-c1ee-4a54-81a2-54f8d4be5178",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e945dbd638102b546d0ca280533a4e2a6804d7e666c4faefc0a8b98a8849ed5f"
+  },
+  "id": "7PSHhTTi9D2AGM5O",
+  "tags": []
+}

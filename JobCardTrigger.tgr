@@ -1,0 +1,7 @@
+trigger JobCardTrigger on Job_Card__c (after insert) {
+    for (Job_Card__c jc : Trigger.new) {
+        if (jc.Chatwoot_Sent__c == true) continue;
+        // we enqueue even if phone null; the queueable will handle missing phone
+        System.enqueueJob(new ChatwootQueueable(jc.Id));
+    }
+}

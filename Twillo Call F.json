@@ -1,0 +1,625 @@
+{
+  "name": "Twillo Call F",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0f3c5e6-387f-4b68-8675-c0a286e5cf1f",
+              "leftValue": "={{ $json.body.Language }}",
+              "rightValue": "Tamil",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -128
+      ],
+      "id": "ecfe84af-6297-4858-aa77-635692ac73a4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "14cc1627-fd5d-4b82-898f-6acf5152cab4",
+              "leftValue": "={{ $json.body.Language }}",
+              "rightValue": "Hindi",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "6f37b6d6-3618-48a6-a4ca-e52d0ea251f0",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6b5d07d1-ef46-494a-8949-e57054f5d6ef",
+              "leftValue": "={{ $json.body.Language }}",
+              "rightValue": "English",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        208
+      ],
+      "id": "420f69ba-daa0-440c-b7a4-45599ec40dcf",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dhruva-api.bhashini.gov.in/services/inference/pipeline",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "2PUe5gOcYaff9TrHi-2TmAbDoEVJm3xWWta9q2mxgpkc-k4sS3Ay5SYRsilSCm_-"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"pipelineTasks\": [       \n        {\n            \"taskType\": \"tts\",\n            \"config\": {\n                \"language\": {\n                    \"sourceLanguage\": \"ta\"\n                },\n                \"serviceId\": \"ai4bharat/indic-tts-coqui-misc-gpu--t4\",\n                \"gender\": \"female\",\n                \"samplingRate\": 8000\n            }\n        }\n    ],\n    \"inputData\": {\n        \"input\": [\n            {\n                \"source\": \"வணக்கம் {{ $json.body.CustomerName }} , உங்கள் அப்பாயின்மென்ட் முடிவடைந்தது.எங்களை தொடர்புகொண்டதற்கு நன்றி தயவுசெய்து உங்கள் அனுபவத்தை 1 முதல் 5 வரை மதிப்பிடுங்கள் 1 மிகவும் குறைவு,5 சிறந்தது\"\n            }\n        ]\n    }\n    }\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        656,
+        -224
+      ],
+      "id": "321624a6-6b65-4418-8c84-a5a795b02911",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dhruva-api.bhashini.gov.in/services/inference/pipeline",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "2PUe5gOcYaff9TrHi-2TmAbDoEVJm3xWWta9q2mxgpkc-k4sS3Ay5SYRsilSCm_-"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"pipelineTasks\": [       \n        {\n            \"taskType\": \"tts\",\n            \"config\": {\n                \"language\": {\n                    \"sourceLanguage\": \"hi\"\n                },\n                \"serviceId\": \"ai4bharat/indic-tts-coqui-misc-gpu--t4\",\n                \"gender\": \"female\",\n                \"samplingRate\": 8000\n            }\n        }\n    ],\n    \"inputData\": {\n        \"input\": [\n            {\n                \"source\": \"नमस्ते {{ $json.body.CustomerName }}, आपका अपॉइंटमेंट पूरा हो गया है। हमसे संपर्क करने के लिए धन्यवाद। कृपया अपनी सेवा के अनुभव को 1 से 5 तक रेट करें, जहाँ 1 खराब और 5 उत्कृष्ट है। आप संख्या बोल सकते हैं या अपने कीपैड पर दबा सकते हैं।\"\n            }\n        ]\n    }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        880,
+        -64
+      ],
+      "id": "61f3ed66-eeda-4fae-8286-7079093d8112",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dhruva-api.bhashini.gov.in/services/inference/pipeline",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "2PUe5gOcYaff9TrHi-2TmAbDoEVJm3xWWta9q2mxgpkc-k4sS3Ay5SYRsilSCm_-"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"pipelineTasks\": [       \n        {\n            \"taskType\": \"tts\",\n            \"config\": {\n                \"language\": {\n                    \"sourceLanguage\": \"en\"\n                },\n                \"serviceId\": \"ai4bharat/indic-tts-coqui-misc-gpu--t4\",\n                \"gender\": \"female\",\n                \"samplingRate\": 8000\n            }\n        }\n    ],\n    \"inputData\": {\n        \"input\": [\n            {\n                \"source\": \"Hi {{ $json.body.CustomerName }}, your appointment has been completed. Thank you for contacting us. We would love to hear your feedback. Please rate your experience from 1 to 5, where 1 is poor and 5 is excellent.\"\n            }\n        ]\n    }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        928,
+        128
+      ],
+      "id": "177f4e13-9d91-49e9-a304-e7e701562c4d",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aihub.vcollabetiq.com/api/v1/prediction/450aa6c5-f674-4c7e-9c7b-c16bef9a5e1c",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"question\":\"base64:{{ $json.pipelineResponse[0].audio[0].audioContent }} Phone: {{ $('Webhook').item.json.body.CustomerPhone }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1088,
+        -64
+      ],
+      "id": "cdafcebe-147a-48c0-a4c8-b40ccc7797ed",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aihub.vcollabetiq.com/api/v1/prediction/450aa6c5-f674-4c7e-9c7b-c16bef9a5e1c",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"question\":\"base64:{{ $json.pipelineResponse[0].audio[0].audioContent }} Phone: {{ $('Webhook').item.json.body.CustomerPhone }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        864,
+        -224
+      ],
+      "id": "70875e30-21ee-41a2-8c53-7738b8baa020",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aihub.vcollabetiq.com/api/v1/prediction/450aa6c5-f674-4c7e-9c7b-c16bef9a5e1c",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"question\":\"base64:{{ $json.pipelineResponse[0].audio[0].audioContent }} Phone: {{ $('Webhook').item.json.body.CustomerPhone }}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1152,
+        128
+      ],
+      "id": "86fa973f-884b-45a6-991e-1d4223600f5a",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e0606e1f-0d08-4b31-a5c2-3fc648c635d2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        144,
+        -144
+      ],
+      "id": "89024bea-cd50-4a32-a743-a4ac5ab55a4c",
+      "name": "Webhook",
+      "webhookId": "e0606e1f-0d08-4b31-a5c2-3fc648c635d2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rating",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        704
+      ],
+      "id": "fafdae1f-bdc4-468a-89ca-fc39330bc604",
+      "name": "Rating Response Webhook",
+      "webhookId": "rating-response-webhook"
+    },
+    {
+      "parameters": {
+        "resource": "customObject",
+        "operation": "update",
+        "customObject": "Appointment__c",
+        "recordId": "={{ $json.query.leadId }}",
+        "customFieldsUi": {
+          "customFieldsValues": [
+            {
+              "fieldId": "Rating__c",
+              "value": "={{ $json.body.SpeechResult }}"
+            }
+          ]
+        },
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        864,
+        624
+      ],
+      "id": "a3d0960e-70d4-49e9-9180-90f5fd55c6c2",
+      "name": "Update Rating in Salesforce",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "ycfwegFNrdVIn1LF",
+          "name": "vpilot Dev SandBox"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Response>\n  <Say voice=\"Polly.Aditi\">Thank you for rating us {{ $json.rating }} out of 5. Your feedback is valuable and helps us serve you better.</Say>\n  <Pause length=\"1\"/>\n  <Say voice=\"Polly.Aditi\">Have a wonderful day!</Say>\n  <Hangup/>\n</Response>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/xml"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        624
+      ],
+      "id": "caca770f-2545-4cbe-88cb-658dedef4fc0",
+      "name": "Thank You Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4d29e1e0-fe71-4122-9874-2111ea2fa25a",
+              "leftValue": "={{ $json.body.SpeechResult }}",
+              "rightValue": "rating",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        704
+      ],
+      "id": "87862344-85d5-4c6e-95b5-ab777f1ab998",
+      "name": "If3"
+    }
+  ],
+  "pinData": {
+    "Rating Response Webhook": [
+      {
+        "json": {
+          "headers": {
+            "connection": "upgrade",
+            "host": "aiorchestrator.vcollabetiq.com",
+            "x-real-ip": "54.226.98.126",
+            "x-forwarded-for": "54.226.98.126",
+            "x-forwarded-proto": "https",
+            "content-length": "492",
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "x-twilio-service-flow-event": "%7B%22flow_id%22%3A%22voice_twimlverb_01k9hpkvzye6p882wevaayh7d8%22%2C%22type%22%3A%22api_event%22%2C%22action%22%3A%22twiml_fetch%22%2C%22sub_action%22%3A%22completed%22%2C%22result%22%3A%22success%22%2C%22metadata%22%3A%7B%22transfer_type%22%3A%22call_transfer_url%22%7D%7D",
+            "i-twilio-idempotency-token": "5e9f57d2-f7d5-48b8-a449-6f9fd82bb9c1",
+            "x-twilio-signature": "BjCqTZ52CY81nIiulZX8B3KcLEs=",
+            "accept": "*/*",
+            "x-home-region": "us1",
+            "user-agent": "TwilioProxy/1.1"
+          },
+          "params": {},
+          "query": {
+            "leadId": "a0FFf000002cOhhMAE"
+          },
+          "body": {
+            "Called": "+918760016833",
+            "ToState": "",
+            "CallerCountry": "US",
+            "Direction": "outbound-api",
+            "SpeechResult": "rating 5",
+            "CallerState": "NY",
+            "Language": "en-IN",
+            "ToZip": "",
+            "Confidence": "0.7152892",
+            "CallSid": "CA863ef5512fa68ba002f2ca6476576805",
+            "To": "+918760016833",
+            "CallerZip": "",
+            "ToCountry": "IN",
+            "CalledZip": "",
+            "ApiVersion": "2010-04-01",
+            "CalledCity": "",
+            "CallStatus": "in-progress",
+            "From": "+16073257977",
+            "AccountSid": "AC32f01a70eaa1f12bd8d32dc7af99a12f",
+            "CalledCountry": "IN",
+            "CallerCity": "",
+            "ToCity": "",
+            "FromCountry": "US",
+            "Caller": "+16073257977",
+            "FromCity": "",
+            "CalledState": "",
+            "FromZip": "",
+            "FromState": "NY"
+          },
+          "webhookUrl": "https://aiorchestrator.vcollabetiq.com/webhook/rating",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "connection": "upgrade",
+            "host": "aiorchestrator.vcollabetiq.com",
+            "x-real-ip": "141.163.205.254",
+            "x-forwarded-for": "141.163.205.254",
+            "x-forwarded-proto": "https",
+            "content-length": "180",
+            "user-agent": "SFDC-Callout/65.0",
+            "content-type": "application/json",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "accept": "text/html, image/gif, image/jpeg, */*; q=0.2"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "Language": "Hindi",
+            "AppointmentEnd": null,
+            "AppointmentDate": "2025-11-07T20:00:00.000Z",
+            "CustomerPhone": "+918760016833",
+            "CustomerName": "Siva S",
+            "AppointmentId": "a0FFf000002cOhhMAE"
+          },
+          "webhookUrl": "https://aiorchestrator.vcollabetiq.com/webhook/e0606e1f-0d08-4b31-a5c2-3fc648c635d2",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        []
+      ]
+    },
+    "Update Rating in Salesforce": {
+      "main": [
+        [
+          {
+            "node": "Thank You Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rating Response Webhook": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Update Rating in Salesforce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "3dc80946-b838-4351-84f0-adfb83835a0c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e945dbd638102b546d0ca280533a4e2a6804d7e666c4faefc0a8b98a8849ed5f"
+  },
+  "id": "zV3J796SEUNvFyJr",
+  "tags": []
+}
